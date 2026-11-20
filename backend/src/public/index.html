@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f6f2">
+    <meta name="description" content="Private, end-to-end encrypted chat and voice calls.">
+    <title>Quiet — private conversations</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/socket.io/socket.io.js" defer></script>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-grain" aria-hidden="true"></div>
+    <main id="welcome" class="welcome-shell">
+      <header class="welcome-nav">
+        <a class="brand" href="/" aria-label="Quiet home">
+          <span class="brand-mark"><span></span><span></span><span></span></span>
+          <span>quiet<span class="brand-period">.</span></span>
+        </a>
+        <span class="nav-caption"><span class="live-dot"></span> Private by design</span>
+      </header>
+      <section class="welcome-content">
+        <div class="eyebrow"><span class="eyebrow-line"></span> A little more private</div>
+        <h1>Closer, even<br>when you’re <em>apart.</em></h1>
+        <p class="welcome-copy">A quiet space for the conversations that matter. No accounts and no message history on our servers — just you and the people you invite.</p>
+        <div class="welcome-card">
+          <label class="field-label" for="display-name">YOUR NAME</label>
+          <input id="display-name" class="text-field" maxlength="28" autocomplete="nickname" placeholder="How should we call you?">
+          <button id="create-room" class="button button-dark button-wide">
+            <span>Start a private room</span><span class="button-arrow">↗</span>
+          </button>
+          <div class="or-divider"><span></span><small>OR JOIN SOMEONE</small><span></span></div>
+          <label class="field-label" for="invite-link">INVITE LINK</label>
+          <div class="join-row">
+            <input id="invite-link" class="text-field" maxlength="1000" placeholder="Paste your invite link" autocomplete="off">
+            <button id="join-room" class="button button-light" aria-label="Join room">Join <span>→</span></button>
+          </div>
+          <p id="welcome-error" class="form-error" role="alert"></p>
+        </div>
+        <div class="trust-row">
+          <span class="trust-icon">✳</span>
+          <span>End-to-end encrypted</span><i></i>
+          <span>Nothing stored</span><i></i>
+          <span>No sign-up</span>
+        </div>
+      </section>
+        <aside class="welcome-preview" aria-hidden="true">
+          <div class="preview-glow"></div>
+          <div class="preview-window">
+            <div class="preview-window-top">
+              <span class="preview-window-mark"><span></span><span></span><span></span></span>
+              <span>your private space</span>
+              <span class="preview-presence"></span>
+            </div>
+            <div class="preview-date">JUST BETWEEN YOU</div>
+            <div class="preview-message preview-message-them">
+              <span class="preview-avatar">M</span>
+              <span class="preview-bubble">Made it home. Already missing our coffee walks ☺</span>
+            </div>
+            <div class="preview-message preview-message-you">
+              <span class="preview-bubble">Next one’s on me. Talk soon? <span class="preview-check">✓✓</span></span>
+            </div>
+            <div class="preview-attachment">
+              <span class="preview-photo"><span></span></span>
+              <span><strong>A little moment</strong><small>Shared just with you</small></span>
+              <span class="preview-lock">⌑</span>
+            </div>
+            <div class="preview-input"><span>Write something nice…</span><span class="preview-send">↑</span></div>
+          </div>
+          <div class="preview-note"><span class="preview-note-lock">⌑</span><span><strong>Only you hold the key</strong><small>Private by design, always.</small></span></div>
+          <div class="preview-orbit preview-orbit-one"></div>
+          <div class="preview-orbit preview-orbit-two"></div>
+        </aside>
+      <footer class="welcome-footer"><span>QUIETLY, SECURELY, TOGETHER.</span><span>Built for the moments that matter.</span></footer>
+      <div class="welcome-orbit orbit-one" aria-hidden="true"></div>
+      <div class="welcome-orbit orbit-two" aria-hidden="true"></div>
+    </main>
+
+    <main id="chat-app" class="app-shell hidden">
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <a class="brand" href="/" aria-label="Quiet home">
+            <span class="brand-mark"><span></span><span></span><span></span></span>
+            <span>quiet<span class="brand-period">.</span></span>
+          </a>
+          <button id="new-room" class="icon-button" title="Start a new room" aria-label="Start a new room">＋</button>
+        </div>
+        <div class="sidebar-label">YOUR SPACE</div>
+        <div class="room-card active-room">
+          <span class="room-avatar"><span class="brand-mark small"><span></span><span></span><span></span></span></span>
+          <span class="room-card-copy"><strong id="sidebar-room-name">Private room</strong><small>End-to-end encrypted</small></span>
+          <span class="room-presence" title="Connected"></span>
+        </div>
+        <div class="sidebar-bottom">
+          <div class="privacy-card">
+            <span class="privacy-lock">⌑</span>
+            <strong>Only you hold the key</strong>
+            <p>Your room key stays on your device. We can’t read or recover your messages.</p>
+            <button id="show-key" class="text-button">View room details <span>↗</span></button>
+          </div>
+          <div class="profile-row">
+            <div class="profile-avatar" id="profile-avatar">Q</div>
+            <div class="profile-copy"><strong id="profile-name">You</strong><small>Here, privately</small></div>
+            <button id="leave-room" class="icon-button leave-button" title="Leave room" aria-label="Leave room">↗</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="conversation">
+        <header class="conversation-header">
+          <div class="conversation-heading">
+            <span class="header-avatar"><span class="brand-mark small"><span></span><span></span><span></span></span></span>
+            <span><strong id="room-title">Private room</strong><small><span class="secure-check">✓</span> End-to-end encrypted</small></span>
+          </div>
+          <div class="header-actions">
+            <span class="member-count"><span class="people-icon">♧</span><b id="member-count">1</b> here</span>
+            <button id="invite-button" class="button button-invite"><span>↗</span> Invite</button>
+            <button id="call-button" class="button button-call"><span class="call-icon">⌕</span> Voice call</button>
+          </div>
+        </header>
+        <div class="encryption-banner"><span class="banner-lock">⌑</span><span>Messages and call signaling are encrypted end-to-end with your room key. <button id="banner-details" class="inline-link">Learn more</button></span></div>
+        <section id="message-list" class="message-list" aria-live="polite">
+          <div class="day-divider"><span></span><small>YOUR PRIVATE SPACE</small><span></span></div>
+          <div class="welcome-note">
+            <div class="note-mark"><span class="brand-mark"><span></span><span></span><span></span></span></div>
+            <h2>This is your quiet place.</h2>
+            <p>Share an invite link to bring someone in.<br>Only people with your room key can read messages.</p>
+            <button id="note-invite" class="text-button">Invite someone to chat <span>↗</span></button>
+          </div>
+        </section>
+        <div id="call-status" class="call-status hidden">
+          <div class="call-pulse"><span></span></div>
+          <div class="call-status-copy"><strong id="call-status-title">Voice call</strong><small id="call-status-subtitle">Connecting securely…</small></div>
+          <audio id="remote-audio" autoplay></audio>
+          <div class="call-controls">
+            <button id="mute-button" class="call-control" title="Mute microphone" aria-label="Mute microphone">♩</button>
+            <button id="hangup-button" class="call-control hangup" title="End call" aria-label="End call">×</button>
+          </div>
+        </div>
+        <form id="message-form" class="composer">
+          <input id="attachment-input" type="file" class="hidden" aria-label="Choose a photo or file">
+          <button type="button" id="attachment-button" class="composer-tool" title="Share a photo or file" aria-label="Share a photo or file">＋</button>
+          <button type="button" id="emoji-button" class="composer-tool" title="Add a smile">☺</button>
+          <input id="message-input" autocomplete="off" maxlength="4000" placeholder="Write something nice…" aria-label="Write a message">
+          <div class="composer-end"><span class="enter-hint">Return to send</span><button class="send-button" type="submit" aria-label="Send message" title="Send message">↑</button></div>
+        </form>
+        <div class="conversation-footnote"><span class="tiny-lock">⌑</span> Your messages are encrypted before they leave this device.</div>
+      </section>
+    </main>
+
+    <dialog id="details-dialog" class="modal">
+      <form method="dialog"><button class="modal-close" aria-label="Close">×</button></form>
+      <div class="modal-kicker"><span class="tiny-lock">⌑</span> ROOM DETAILS</div>
+      <h2>Private means private.</h2>
+      <p>Messages and call signaling are encrypted on your device before they are relayed. Your room key is only in this invite link and is never sent to the server. Voice audio uses WebRTC’s encrypted media transport.</p>
+      <label class="field-label">ROOM ID</label><div id="detail-room-id" class="detail-value"></div>
+      <label class="field-label">KEY FINGERPRINT</label><div id="detail-fingerprint" class="detail-value"></div>
+      <button id="details-invite" class="button button-dark button-wide">Copy invite link <span>↗</span></button>
+      <p class="modal-footnote">Anyone with the invite link can join and read messages. Share it only with people you trust.</p>
+    </dialog>
+
+    <dialog id="incoming-dialog" class="modal incoming-modal">
+      <div class="incoming-orb"><span>⌕</span></div>
+      <div class="modal-kicker centered">INCOMING VOICE CALL</div>
+      <h2 id="incoming-name">Someone is calling</h2>
+      <p>Accept to connect with encrypted voice.</p>
+      <div class="incoming-actions"><button id="decline-call" class="button button-light">Decline</button><button id="accept-call" class="button button-dark">Answer <span>↗</span></button></div>
+    </dialog>
+    <div id="toast" class="toast" role="status"></div>
+  </body>
+</html>
